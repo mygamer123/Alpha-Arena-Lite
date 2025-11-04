@@ -186,7 +186,8 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
         from openai import OpenAI
 
         # Determine which AI provider to use
-        if OPENROUTER_API_KEY:
+        # Check if OpenRouter is configured and not empty
+        if OPENROUTER_API_KEY and OPENROUTER_API_KEY.strip():
             # Use OpenRouter
             client = OpenAI(
                 api_key=OPENROUTER_API_KEY,
@@ -194,7 +195,7 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
             )
             model = OPENROUTER_MODEL
             print(f"🔄 Using OpenRouter with model: {model}")
-        else:
+        elif OPENAI_API_KEY and OPENAI_API_KEY.strip():
             # Use OpenAI/DeepSeek
             client = OpenAI(
                 api_key=OPENAI_API_KEY,
@@ -202,6 +203,8 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
             )
             model = "deepseek-chat"
             print(f"🔄 Using DeepSeek model: {model}")
+        else:
+            raise ValueError("No valid API key found. Please set OPENAI_API_KEY or OPENROUTER_API_KEY in your .env file.")
 
         # Create a chat completion that returns structured JSON
         response = client.chat.completions.create(
