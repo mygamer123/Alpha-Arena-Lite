@@ -10,6 +10,8 @@ import dotenv
 dotenv.load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
 
 def _fmt_number(value: Any, decimals: int = 2) -> str:
     try:
@@ -183,15 +185,27 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
 
         from openai import OpenAI
 
-        # Initialize client
-        client = OpenAI(
-            api_key=OPENAI_API_KEY,
-            base_url="https//api.deepseek.com/v1"
-        )
+        # Determine which AI provider to use
+        if OPENROUTER_API_KEY:
+            # Use OpenRouter
+            client = OpenAI(
+                api_key=OPENROUTER_API_KEY,
+                base_url="https://openrouter.ai/api/v1"
+            )
+            model = OPENROUTER_MODEL
+            print(f"🔄 Using OpenRouter with model: {model}")
+        else:
+            # Use OpenAI/DeepSeek
+            client = OpenAI(
+                api_key=OPENAI_API_KEY,
+                base_url="https://api.deepseek.com/v1"
+            )
+            model = "deepseek-chat"
+            print(f"🔄 Using DeepSeek model: {model}")
 
         # Create a chat completion that returns structured JSON
         response = client.chat.completions.create(
-            model="deepseek-chat",
+            model=model,
             messages=[{"role": "user", "content": MARKET_PROMPT}],
             response_format={"type": "json_object"}  # Ensures valid JSON
         )
