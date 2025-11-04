@@ -10,6 +10,8 @@ import dotenv
 dotenv.load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
 
 def _fmt_number(value: Any, decimals: int = 2) -> str:
     try:
@@ -135,7 +137,7 @@ def market_data_to_string_for_symbol(market_data: Dict[str, Any], symbol: str) -
 
   return "\n".join(lines)
 
-def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfolio_json: Dict[str, Any]) -> List[Dict[str, Any]]:
+def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfolio_json: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate trading decisions for all symbols based on market data and portfolio
     
@@ -144,7 +146,7 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
         portfolio_json: Portfolio JSON data from SimplePortfolio.return_json()
     
     Returns:
-        List of decision objects, one per symbol
+        Dictionary mapping symbol to decision object
     """
     decisions = {}
     for symbol, market_data in (market_data_dict or {}).items():
@@ -183,15 +185,30 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
 
         from openai import OpenAI
 
-        # Initialize client
-        client = OpenAI(
-            api_key=OPENAI_API_KEY,
-            base_url="https//api.deepseek.com/v1"
-        )
+        # Determine which AI provider to use
+        # Check if OpenRouter is configured and not empty
+        if OPENROUTER_API_KEY and OPENROUTER_API_KEY.strip():
+            # Use OpenRouter
+            client = OpenAI(
+                api_key=OPENROUTER_API_KEY,
+                base_url="https://openrouter.ai/api/v1"
+            )
+            model = OPENROUTER_MODEL
+            print(f"🔄 Using OpenRouter with model: {model}")
+        elif OPENAI_API_KEY and OPENAI_API_KEY.strip():
+            # Use OpenAI/DeepSeek
+            client = OpenAI(
+                api_key=OPENAI_API_KEY,
+                base_url="https://api.deepseek.com/v1"
+            )
+            model = "deepseek-chat"
+            print(f"🔄 Using DeepSeek model: {model}")
+        else:
+            raise ValueError("No valid API key found. Please set OPENAI_API_KEY or OPENROUTER_API_KEY in your .env file.")
 
         # Create a chat completion that returns structured JSON
         response = client.chat.completions.create(
-            model="deepseek-chat",
+            model=model,
             messages=[{"role": "user", "content": MARKET_PROMPT}],
             response_format={"type": "json_object"}  # Ensures valid JSON
         )
