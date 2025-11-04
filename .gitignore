@@ -1,3 +1,10 @@
 .env
 *.pyc
 .pytest_cache/
+
+# Portfolio state files
+portfolio.json
+backtest_portfolio.json
+
+# Generated historical data (keep sample data but ignore large files)
+# historical_data/*.csv
