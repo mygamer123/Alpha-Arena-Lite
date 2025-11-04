@@ -137,7 +137,7 @@ def market_data_to_string_for_symbol(market_data: Dict[str, Any], symbol: str) -
 
   return "\n".join(lines)
 
-def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfolio_json: Dict[str, Any]) -> List[Dict[str, Any]]:
+def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfolio_json: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate trading decisions for all symbols based on market data and portfolio
     
@@ -146,7 +146,7 @@ def trade_decision_provider(market_data_dict: Dict[str, Dict[str, Any]], portfol
         portfolio_json: Portfolio JSON data from SimplePortfolio.return_json()
     
     Returns:
-        List of decision objects, one per symbol
+        Dictionary mapping symbol to decision object
     """
     decisions = {}
     for symbol, market_data in (market_data_dict or {}).items():
