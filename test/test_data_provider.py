@@ -184,3 +184,40 @@ def test_file_data_provider_get_current_timestamp(temp_data_dir, sample_data):
     provider.advance('BTC', steps=5)
     timestamp2 = provider.get_current_timestamp('BTC')
     assert timestamp2 == sample_data.iloc[5]['timestamp']
+
+
+def test_file_data_provider_path_traversal_protection(temp_data_dir):
+    """Test that path traversal attempts are blocked"""
+    provider = FileDataProvider(data_dir=temp_data_dir)
+    
+    # Test various path traversal attempts
+    malicious_symbols = [
+        '../etc/passwd',
+        '../../etc/passwd',
+        'BTC/../../../etc/passwd',
+        'BTC/../../secret',
+        '..\\..\\windows\\system32',
+    ]
+    
+    for symbol in malicious_symbols:
+        price = provider.get_last_price(symbol)
+        assert price is None, f"Path traversal not blocked for: {symbol}"
+
+
+def test_file_data_provider_invalid_symbol_format(temp_data_dir):
+    """Test that invalid symbol formats are rejected"""
+    provider = FileDataProvider(data_dir=temp_data_dir)
+    
+    # Test invalid characters
+    invalid_symbols = [
+        'BTC/USD',
+        'BTC:USDT',
+        'BTC;rm -rf',
+        'BTC|cat',
+        'BTC`whoami`',
+        'BTC$(ls)',
+    ]
+    
+    for symbol in invalid_symbols:
+        price = provider.get_last_price(symbol)
+        assert price is None, f"Invalid symbol format not rejected: {symbol}"

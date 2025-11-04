@@ -45,7 +45,24 @@ class FileDataProvider(DataProvider):
         if symbol in self.data_cache:
             return self.data_cache[symbol]
         
+        # Validate symbol to prevent path traversal attacks
+        # Allow only alphanumeric characters and hyphens
+        if not symbol or not all(c.isalnum() or c in '-_' for c in symbol):
+            logger.error(f"Invalid symbol format: {symbol}")
+            return None
+        
         filename = os.path.join(self.data_dir, f"{symbol}_historical.csv")
+        
+        # Additional check: ensure the resolved path is within data_dir
+        try:
+            resolved_path = os.path.abspath(filename)
+            resolved_dir = os.path.abspath(self.data_dir)
+            if not resolved_path.startswith(resolved_dir + os.sep):
+                logger.error(f"Path traversal attempt detected: {symbol}")
+                return None
+        except Exception as e:
+            logger.error(f"Error validating path for {symbol}: {e}")
+            return None
         
         if not os.path.exists(filename):
             logger.error(f"Data file not found: {filename}")
