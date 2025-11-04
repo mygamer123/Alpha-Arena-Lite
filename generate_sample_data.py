@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 import os
 
 def generate_historical_data(symbol: str, days: int = 30, interval_minutes: int = 3, 
-                             start_price: float = 50000.0, volatility: float = 0.02):
+                             start_price: float = 50000.0, volatility: float = 0.02,
+                             random_seed: int = 42):
     """
     Generate synthetic historical data for a cryptocurrency
     
@@ -18,6 +19,7 @@ def generate_historical_data(symbol: str, days: int = 30, interval_minutes: int 
         interval_minutes: Time interval in minutes (e.g., 3 for 3-minute candles)
         start_price: Starting price
         volatility: Price volatility (standard deviation of returns)
+        random_seed: Random seed for reproducibility (default: 42)
     
     Returns:
         DataFrame with historical data
@@ -32,7 +34,7 @@ def generate_historical_data(symbol: str, days: int = 30, interval_minutes: int 
     timestamps = [start_time + timedelta(minutes=i*interval_minutes) for i in range(total_candles)]
     
     # Generate price data using random walk
-    np.random.seed(42)  # For reproducibility
+    np.random.seed(random_seed)  # For reproducibility
     returns = np.random.normal(0, volatility, total_candles)
     
     # Add some trend

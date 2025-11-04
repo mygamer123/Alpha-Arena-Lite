@@ -155,7 +155,7 @@ class FileDataProvider(DataProvider):
         new_idx = current_idx + steps
         
         if new_idx >= len(df):
-            logger.info(f"Reached end of data for {symbol}")
+            logger.debug(f"Reached end of data for {symbol}")
             return False
         
         self.current_index[symbol] = new_idx
@@ -218,9 +218,9 @@ def symbol_data_provider_json(symbol: str, frequency: str, count: int,
     stock['close_50_ema']
     
     latest = stock.tail(1)
-    past_n = stock.tail(count)
+    historical_data = stock.tail(count)
     
-    mid_prices = ((past_n['high'] + past_n['low']) / 2).tolist()
+    mid_prices = ((historical_data['high'] + historical_data['low']) / 2).tolist()
     
     result = {
         'current_price': float(latest['close'].iloc[0]),
@@ -228,19 +228,19 @@ def symbol_data_provider_json(symbol: str, frequency: str, count: int,
         'current_macd': float(latest['macd'].iloc[0]),
         'current_rsi_7': float(latest['rsi_7'].iloc[0]),
         'current_volume': float(latest['volume'].iloc[0]),
-        'average_volume': float(past_n['volume'].mean()),
+        'average_volume': float(historical_data['volume'].mean()),
         'open_interest_latest': float(latest['volume'].iloc[0]),
-        'open_interest_average': float(past_n['volume'].mean()),
+        'open_interest_average': float(historical_data['volume'].mean()),
         'funding_rate': 0.0,
         'mid_prices': mid_prices,
-        'ema_close_20_array': past_n['close_20_ema'].tolist(),
-        'macd_array': past_n['macd'].tolist(),
-        'rsi_7_array': past_n['rsi_7'].tolist(),
-        'rsi_14_array': past_n['rsi_14'].tolist(),
-        'ema_20_array': past_n['close_20_ema'].tolist(),
-        'ema_50_array': past_n['close_50_ema'].tolist(),
-        'atr_3_array': past_n['atr_3'].tolist(),
-        'atr_14_array': past_n['atr_14'].tolist()
+        'ema_close_20_array': historical_data['close_20_ema'].tolist(),
+        'macd_array': historical_data['macd'].tolist(),
+        'rsi_7_array': historical_data['rsi_7'].tolist(),
+        'rsi_14_array': historical_data['rsi_14'].tolist(),
+        'ema_20_array': historical_data['close_20_ema'].tolist(),
+        'ema_50_array': historical_data['close_50_ema'].tolist(),
+        'atr_3_array': historical_data['atr_3'].tolist(),
+        'atr_14_array': historical_data['atr_14'].tolist()
     }
     
     return result
