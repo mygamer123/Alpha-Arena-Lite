@@ -49,6 +49,8 @@ python simulation.py
 - 如果没有找到 `portfolio_init.json`，会创建一个新的投资组合
 - 运行状态会保存到 `portfolio.json`
 
+---
+
 ## 数据源说明
 
 ### 实时价格数据源
@@ -76,13 +78,18 @@ python backtest_simulation.py
 - 历史数据分析
 - 离线测试
 
-详见下方"回测模式"部分。
+详见下方"回测模式"部分或查看 [回测功能详细指南](BACKTEST_GUIDE.md)。
 
 ## 回测模式
 
 ### 准备历史数据
 
-在 `historical_data/` 目录下放置 CSV 格式的历史数据文件，文件名格式为 `{SYMBOL}_historical.csv`。
+首先生成样本数据：
+```bash
+python generate_sample_data.py
+```
+
+或在 `historical_data/` 目录下放置自己的 CSV 格式历史数据文件，文件名格式为 `{SYMBOL}_historical.csv`。
 
 CSV 文件格式：
 ```csv
